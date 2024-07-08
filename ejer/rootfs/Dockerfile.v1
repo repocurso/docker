@@ -1,0 +1,3 @@
+FROM scratch
+ADD rootfs1.tar.xz /
+CMD ["/bin/bash"]

@@ -1,0 +1,2 @@
+FROM repocurso/alpine:3.20
+RUN apk update && apk add apache2 && apk add nano && echo "Curso docker" > archivo.txt

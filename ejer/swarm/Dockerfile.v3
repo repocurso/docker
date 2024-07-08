@@ -1,0 +1,30 @@
+# Usar la imagen base de Ubuntu
+FROM ubuntu:20.04
+
+# Establecer el entorno del contenedor para Docker
+ENV container docker
+
+# Instalar systemd y systemd-sysv
+RUN apt-get update && \
+    apt-get install -y systemd systemd-sysv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Limpiar unidades no necesarias para Docker
+RUN find /lib/systemd/system/sysinit.target.wants/ -type l -not -name systemd-tmpfiles-setup.service -delete && \
+    rm -f /lib/systemd/system/multi-user.target.wants/* && \
+    rm -f /etc/systemd/system/*.wants/* && \
+    rm -f /lib/systemd/system/local-fs.target.wants/* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
+    rm -f /lib/systemd/system/basic.target.wants/* && \
+    rm -f /lib/systemd/system/anaconda.target.wants/*
+
+# Crear un directorio para cgroup
+RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
+
+# Establecer un punto de montaje para el sistema de archivos cgroup
+VOLUME [ "/sys/fs/cgroup" ]
+
+# Especificar el comando de inicio
+CMD ["/sbin/init"]

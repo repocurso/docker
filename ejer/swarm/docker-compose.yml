@@ -1,0 +1,64 @@
+version: '3'
+services:
+  docker1:
+    image: docker:v2
+    build:
+      context: ./context
+      dockerfile: Dockerfile.v2
+    container_name: docker1
+    hostname: manager
+    networks:
+      red-docker:
+        ipv4_address: 172.21.0.100
+    volumes:
+      - bkp-docker:/tmp/backup
+    privileged: true
+    tty: true
+    stdin_open: true    
+  docker2:
+    image: docker:v2
+    build:
+      context: ./context
+      dockerfile: Dockerfile.v2      
+    container_name: docker2
+    hostname: worker1
+    networks:
+      red-docker:
+        ipv4_address: 172.21.0.101
+    volumes:
+      - bkp-docker:/tmp/backup      
+    privileged: true          
+    tty: true
+    stdin_open: true      
+  docker3:
+    image: docker:v2
+    build:
+      context: ./context
+      dockerfile: Dockerfile.v2      
+    container_name: docker3
+    hostname: worker2
+    networks:
+      red-docker:
+        ipv4_address: 172.21.0.102
+    volumes:
+      - bkp-docker:/tmp/backup      
+    privileged: true
+    tty: true
+    stdin_open: true      
+networks:
+  red-docker:
+    driver: bridge
+    external: false
+    name: red-docker
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/16
+volumes:
+  bkp-docker:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/bkp-docker  
+    name: bkp-docker

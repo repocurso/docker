@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  rockylinux-systemd:
+    image: eniocarboni/docker-rockylinux-systemd:latest
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    container_name: rockylinux-systemd

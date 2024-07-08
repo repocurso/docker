@@ -1,0 +1,10 @@
+FROM ubuntu:20.04_ssh
+RUN apt-get -y -qq update && apt-get install -y -qq apt-transport-https ca-certificates curl software-properties-common > /dev/null
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt-get -y -qq update && apt-cache policy -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin > /dev/null
+RUN apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin > /dev/null
+RUN apt-get -y -qq autoremove && apt-get -y -qq autoclean
+RUN sed -i 's/ulimit -Hn [0-9]\+/ulimit -n 65536/' /etc/init.d/docker
+ADD start_docker.sh /
+ENTRYPOINT ["/start_docker.sh"]

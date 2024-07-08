@@ -1,0 +1,29 @@
+#FROM openjdk:11.0.1-jdk-oraclelinux7 as builder
+FROM rootfs:v1 AS builder
+RUN apt-get update -qqy && apt-get install -qqy openjdk-11-jdk-headless > /dev/null
+#RUN jlink --no-header-files --no-man-pages --add-modules java.base,java.desktop,java.logging,java.sql --output /jre
+RUN jlink --add-modules java.base --strip-debug --no-man-pages --no-header-files --compress=2 --output /javaruntime
+RUN mkdir -p /tmp/rootfs/lib/x86_64-linux-gnu /tmp/rootfs/lib/jli /tmp/rootfs/lib64
+RUN ldd /javaruntime/bin/java | grep -o '/lib[^ ]*' | grep -v jli | xargs -I '{}' cp -v '{}' /tmp/rootfs/'{}'
+RUN ldd /javaruntime/lib/server/libjvm.so | grep -o '/lib[^ ]*' | grep -v jli | xargs -I '{}' cp -v '{}' /tmp/rootfs/'{}'
+
+ARG JAVA_FILE
+COPY ${JAVA_FILE} /${JAVA_FILE}
+
+WORKDIR /
+RUN javac ${JAVA_FILE} 
+
+RUN CLASS_NAME=$(basename ${JAVA_FILE} .java) && echo "CLASS_NAME=${CLASS_NAME}" > /className.env 
+ARG NAME=${CLASS_NAME}
+
+FROM rootfs:v2 AS runtime
+ARG NAME
+COPY --from=builder /className.env /className.env
+WORKDIR /
+RUN . /className.env
+ENV NAME=${NAME}
+#COPY --from=builder /javaruntime /javaruntime
+#COPY --from=builder /tmp/rootfs/ /
+#COPY --from=builder /${CLASS_NAME}.class /${CLASS_NAME}.class
+
+CMD ["/javaruntime/bin/java", "${CLASS_NAME}"]

@@ -1,0 +1,10 @@
+FROM ubuntu:20.04 
+RUN apt-get update && apt-get install -y openssh-server && apt-get clean && apt-get install -y net-tools && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/* 
+#RUN apt-get install -y --no-install-recommends apt-utils
+RUN mkdir /var/run/sshd
+ARG PASSWORD
+RUN echo 'root:'$PASSWORD | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+EXPOSE 22 80 8080
+ENTRYPOINT ["/usr/sbin/sshd", "-D"]

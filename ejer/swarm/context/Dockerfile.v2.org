@@ -1,0 +1,20 @@
+FROM ubuntu:20.04
+RUN apt-get update
+RUN apt-get install -y net-tools && apt-get install -y iputils-ping
+RUN apt-get install -y curl
+RUN apt install apt-transport-https ca-certificates curl software-properties-common -y
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+RUN apt-cache policy docker-ce
+RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+RUN sed -i 's/ulimit -Hn [0-9]\+/ulimit -n 65536/' /etc/init.d/docker
+ADD start_docker.sh /
+
+RUN apt-get update && apt-get install -y openssh-server && apt-get clean
+RUN mkdir /var/run/sshd
+RUN echo 'root:cocoliso' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+ENTRYPOINT ["/start_docker.sh"]
+
